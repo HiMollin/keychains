@@ -68,3 +68,7 @@ Keychains 会把密码库保存在各平台的应用数据目录中：
 - Linux：`~/.local/share/io.github.himollin.keychains/keychains.db`
 
 请不要在 Keychains 运行时手动编辑或同步数据库文件。需要在设备之间迁移密码库时，请使用应用内的加密备份功能。
+
+## 特别鸣谢
+
+特别鸣谢 Codex。

@@ -68,3 +68,7 @@ Keychains stores the vault in the platform's application data directory:
 - Linux: `~/.local/share/io.github.himollin.keychains/keychains.db`
 
 Do not edit or synchronize the database file while Keychains is running. Use an encrypted backup when moving a vault between devices.
+
+## Special Thanks
+
+Special thanks to Codex.

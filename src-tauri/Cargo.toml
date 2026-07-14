@@ -1,6 +1,6 @@
 [package]
 name = "keychains"
-version = "0.1.0"
+version = "1.0.0"
 description = "A private, local-first password manager"
 authors = ["Mollin"]
 edition = "2021"
