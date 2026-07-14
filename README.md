@@ -1,40 +1,48 @@
 # Keychains
 
-Keychains 是一个使用 Rust、Tauri 2、Vue 3 和 TypeScript 构建的本地密码管理器。账号数据不会上传到网络，数据库中的密码条目始终以密文保存。
+[简体中文](README.zh-CN.md)
 
-## 功能
+Keychains is a local-first password manager for desktop. It keeps your vault on your device and encrypts sensitive data before it is written to disk, giving you a straightforward way to manage credentials without relying on a cloud service.
 
-- 网站、应用及其他账号的新增、查看、编辑和删除
-- 按名称、用户名、网址、标签、备注及非敏感自定义字段检索
-- 收藏、类型和标签筛选，以及名称、账号和时间排序
-- 可标记为敏感的自定义字段
-- 使用系统安全随机数的密码生成器
-- 自动锁定、密码自动隐藏和剪贴板定时清除
-- 主密码更换与事务式重新加密
-- 使用独立密码保护的 `.kcbak` 备份、合并导入及整体恢复
-- 跟随系统、浅色和深色三种主题
+Built with Rust, Tauri 2, Vue 3, and TypeScript, Keychains combines a native security core with a clean desktop interface.
 
-## 安全设计
+## Highlights
 
-- 主密码通过 Argon2id 派生 256 位密钥，默认使用 64 MiB 内存、3 次迭代。
-- 每个条目使用 XChaCha20-Poly1305 和独立随机 nonce 加密；条目 ID 与格式版本通过 AAD 绑定，防止密文被替换到其他记录。
-- SQLite 只保存密文、KDF 元数据和非敏感应用设置，WebView 没有直接访问数据库的能力。
-- 解锁密钥只存在于 Rust 进程内存，锁定或退出后清除。
-- 备份使用独立的 Argon2id 密钥与 XChaCha20-Poly1305 加密；不提供明文导出。
-- 应用不加载远程脚本、字体或网站图标，并使用受限 Tauri capabilities 和 CSP。
+- Create, view, edit, and delete credentials for websites, apps, and other accounts
+- Search names, usernames, URLs, tags, notes, and non-sensitive custom fields
+- Filter by favorites, entry type, or tags, with sorting by name, account, and time
+- Add custom fields and mark individual fields as sensitive
+- Generate passwords with the operating system's secure random number generator
+- Automatically lock the vault, hide revealed passwords, and clear the clipboard after a delay
+- Change the master password with transactional re-encryption of the vault
+- Create password-protected `.kcbak` backups, merge them into an existing vault, or restore a complete vault
+- Choose between system, light, and dark themes
 
-主密码和备份密码都无法找回。请保留可靠的加密备份，并妥善保存对应密码。
+## Security
 
-## 本地开发
+Keychains is designed so that plaintext secrets stay out of persistent storage:
 
-要求：Node.js、npm、Rust stable，以及 Tauri 对应平台的系统依赖。
+- The master password is processed with Argon2id to derive a 256-bit key. The default parameters use 64 MiB of memory and three iterations.
+- Every entry is encrypted with XChaCha20-Poly1305 and a unique random nonce. The entry ID and format version are bound as additional authenticated data to prevent ciphertext from being moved between records.
+- SQLite stores encrypted entries, key-derivation metadata, and non-sensitive application settings. The WebView cannot access the database directly.
+- The unlocked key exists only in the Rust process and is cleared when the vault is locked or the application exits.
+- Backups use a separate Argon2id-derived key and XChaCha20-Poly1305 encryption. Keychains does not provide plaintext exports.
+- The application does not load remote scripts, fonts, or website icons, and runs with a restricted Content Security Policy and Tauri capability set.
+
+Master passwords and backup passwords cannot be recovered. Keep an encrypted backup in a safe place and make sure you can access its password.
+
+## Development
+
+You will need Node.js, npm, a stable Rust toolchain, and the platform-specific dependencies required by Tauri.
+
+Install the dependencies and start the development build:
 
 ```powershell
 npm install
 npm run tauri dev
 ```
 
-检查与测试：
+Run the checks:
 
 ```powershell
 npm run build
@@ -43,24 +51,20 @@ cargo test --manifest-path src-tauri/Cargo.toml
 cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings
 ```
 
-构建 Windows NSIS 安装包：
+Build the Windows NSIS installer:
 
 ```powershell
 npm run tauri build
 ```
 
-构建产物位于 `src-tauri/target/release/bundle/nsis/`。
+The installer will be written to `src-tauri/target/release/bundle/nsis/`.
 
-## 数据位置
+## Vault location
 
-密码库使用 Tauri 的应用数据目录：
+Keychains stores the vault in the platform's application data directory:
 
-- Windows：`%APPDATA%\io.github.himollin.keychains\keychains.db`
-- macOS：`~/Library/Application Support/io.github.himollin.keychains/keychains.db`
-- Linux：`~/.local/share/io.github.himollin.keychains/keychains.db`
+- Windows: `%APPDATA%\io.github.himollin.keychains\keychains.db`
+- macOS: `~/Library/Application Support/io.github.himollin.keychains/keychains.db`
+- Linux: `~/.local/share/io.github.himollin.keychains/keychains.db`
 
-请不要在应用运行时手动编辑或同步数据库文件；跨设备迁移应使用应用内的加密备份功能。
-
-## 当前边界
-
-首版不包含云同步、浏览器扩展、网页自动填充、多用户共享、系统凭据免密解锁、明文 CSV 导出或在线更新。Windows 为首个完整验证平台，代码和数据格式保持跨平台。
+Do not edit or synchronize the database file while Keychains is running. Use an encrypted backup when moving a vault between devices.
