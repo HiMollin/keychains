@@ -12,6 +12,7 @@ const emit = defineEmits<{
   close: [];
   saveSettings: [settings: AppSettings];
   imported: [];
+  notify: [message: string, tone: "success" | "error"];
 }>();
 
 const tab = ref<"general" | "security" | "backup">("general");
@@ -22,17 +23,13 @@ const confirmPassword = ref("");
 const backupPassword = ref("");
 const backupConfirm = ref("");
 const busy = ref(false);
-const localError = ref("");
-const notice = ref("");
 
 async function run(action: () => Promise<void>) {
   busy.value = true;
-  localError.value = "";
-  notice.value = "";
   try {
     await action();
   } catch (error) {
-    localError.value = errorMessage(error);
+    emit("notify", errorMessage(error), "error");
   } finally {
     busy.value = false;
   }
@@ -44,11 +41,11 @@ function submitSettings() {
 
 async function changePassword() {
   if (!currentPassword.value || !newPassword.value) {
-    localError.value = t("请填写当前主密码和新主密码");
+    emit("notify", t("请填写当前主密码和新主密码"), "error");
     return;
   }
   if (newPassword.value !== confirmPassword.value) {
-    localError.value = t("两次输入的新主密码不一致");
+    emit("notify", t("两次输入的新主密码不一致"), "error");
     return;
   }
   const strength = passwordStrength(newPassword.value);
@@ -58,13 +55,13 @@ async function changePassword() {
     currentPassword.value = "";
     newPassword.value = "";
     confirmPassword.value = "";
-    notice.value = t("主密码已更换，所有条目已重新加密");
+    emit("notify", t("主密码已更换，所有条目已重新加密"), "success");
   });
 }
 
 async function exportBackup() {
   if (!backupPassword.value || backupPassword.value !== backupConfirm.value) {
-    localError.value = t("请输入并确认备份密码");
+    emit("notify", t("请输入并确认备份密码"), "error");
     return;
   }
   const path = await saveDialog({
@@ -76,13 +73,13 @@ async function exportBackup() {
     const result = await api.exportBackup(path, backupPassword.value);
     backupPassword.value = "";
     backupConfirm.value = "";
-    notice.value = t("已加密备份 {count} 个条目", { count: result.entryCount });
+    emit("notify", t("已加密备份 {count} 个条目", { count: result.entryCount }), "success");
   });
 }
 
 async function importBackup(mode: "merge" | "replace") {
   if (!backupPassword.value) {
-    localError.value = t("请输入备份密码");
+    emit("notify", t("请输入备份密码"), "error");
     return;
   }
   const path = await open({
@@ -98,10 +95,12 @@ async function importBackup(mode: "merge" | "replace") {
       : t("备份包含 {count} 个条目。确定合并到当前密码库吗？", { count: preview.entryCount });
     if (!window.confirm(message)) return;
     const result = await api.importBackup(path, backupPassword.value, mode);
-    notice.value = t("已导入 {imported} 个条目，跳过 {skipped} 个", {
+    backupPassword.value = "";
+    backupConfirm.value = "";
+    emit("notify", t("已导入 {imported} 个条目，跳过 {skipped} 个", {
       imported: result.imported,
       skipped: result.skipped
-    });
+    }), "success");
     emit("imported");
   });
 }
@@ -184,9 +183,6 @@ async function importBackup(mode: "merge" | "replace") {
             <button class="danger-button" :disabled="busy" @click="importBackup('replace')">{{ t("整体恢复") }}</button>
           </div>
         </section>
-
-        <p v-if="localError" class="form-error settings-message">{{ localError }}</p>
-        <p v-if="notice" class="form-success settings-message">{{ notice }}</p>
       </div>
     </section>
   </div>
