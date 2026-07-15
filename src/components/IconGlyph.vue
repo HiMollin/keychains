@@ -9,7 +9,7 @@ defineProps<{
 
 <template>
   <svg
-    class="icon-glyph"
+    class="pointer-events-none block flex-none"
     :width="size ?? 18"
     :height="size ?? 18"
     viewBox="0 0 24 24"

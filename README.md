@@ -4,7 +4,7 @@
 
 Keychains is a local-first password manager for desktop. It keeps your vault on your device and encrypts sensitive data before it is written to disk, giving you a straightforward way to manage credentials without relying on a cloud service.
 
-Built with Rust, Tauri 2, Vue 3, and TypeScript, Keychains combines a native security core with a clean desktop interface.
+Built with Rust, Tauri 2, Vue 3, TypeScript, and Tailwind CSS 4, Keychains combines a native security core with a clean desktop interface. The interface uses Tailwind's utility-first classes, with a small global stylesheet reserved for themes, resize interactions, and transitions.
 
 ## Highlights
 
