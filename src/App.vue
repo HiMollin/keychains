@@ -263,6 +263,10 @@ function showToast(message: string, tone: ToastTone = "default", duration = 2_80
   toastTimer = window.setTimeout(() => dismissToast(toast.id), duration);
 }
 
+function handleSettingsNotification(message: string, tone: "success" | "error") {
+  showToast(message, tone, tone === "error" ? 4_000 : 2_800);
+}
+
 async function copyField(field: string, label: string) {
   if (!store.selected) return;
   try {
@@ -684,6 +688,7 @@ onBeforeUnmount(() => {
     @close="showSettings = false"
     @save-settings="saveSettings"
     @imported="store.loadEntries"
+    @notify="handleSettingsNotification"
   />
 
   <Transition name="toast" mode="out-in">
